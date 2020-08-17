@@ -2,6 +2,7 @@ import re
 import os
 import requests
 import configparser
+import argparse
 import xml.etree.ElementTree as ET
 from plexapi.server import PlexServer
 from progress.bar import Bar
@@ -26,6 +27,10 @@ if enable_debug == 'True':
 else:
     enable_debug = False
 
+cli = argparse.ArgumentParser()
+cli.add_argument("-a", "--all", help="Process all libraries", action="store_true")
+args = cli.parse_args()
+
 # Plex server settings
 PLEX_SERVER = config['plex_url']
 PLEX_TOKEN = config['plex_token']
@@ -43,6 +48,9 @@ BACKGROUND_ITEM_LIMIT = int(config['background_item_limit'])
 
 # TMDB settings
 TMDB_APIKEY = config['api_key']
+
+# Command Line Arguments
+ALL_LIBRARIES = args.all
 
 ############################################################################################################################################
 # Global variables
@@ -96,11 +104,14 @@ def main():
         print('Could not find any movie libraries.')
         return
 
-    input_sections = input('\r\nEnter a whitespace separated list of library IDs to work on (e.g: 3 5 8 13):\r\n')
- 
-    # remove invalid characters from user input
-    input_sections = ''.join(i for i in input_sections if i.isdigit() or i.isspace()).split()
+    if ALL_LIBRARIES:
+        input_sections = section_dict.keys()
+    else:
+        input_sections = input('\r\nEnter a whitespace separated list of library IDs to work on (e.g: 3 5 8 13):\r\n')
     
+        # remove invalid characters from user input
+        input_sections = ''.join(i for i in input_sections if i.isdigit() or i.isspace()).split()
+
     for section_id in input_sections:
         
         # ensure that it is a valid library
